@@ -17,7 +17,7 @@ public class DebugMenuUI : MonoBehaviour
 #region Internal
 
     /// <summary> Dimensions of the main window. </summary>
-    private static Vector2 WINDOW_DIMENSION = new Vector2(256.0f, 192.0f);
+    private static Vector2 WINDOW_DIMENSION = new Vector2(256.0f, 256.0f);
     /// <summary> Base padding used within the UI. </summary>
     private static float BASE_PADDING = 8.0f;
 
@@ -138,7 +138,19 @@ public class DebugMenuUI : MonoBehaviour
                     { InventoryManager.Instance.availableCurrency = currency; }
                  */
                 
-                
+                GUILayout.BeginHorizontal();
+                {
+                    // Elements defined here will be place after each other
+                    GUILayout.Label("Currency: ", GUILayout.Width(WINDOW_DIMENSION.x / 4.0f));
+                    var currency = InventoryManager.Instance.availableCurrency;
+                    currency = (int) GUILayout.HorizontalSlider(currency, 0.0f, 1000.0f, 
+                        GUILayout.ExpandWidth(true));
+                    if (GUI.changed)
+                    { 
+                        InventoryManager.Instance.availableCurrency = currency; 
+                    }
+                }
+                GUILayout.EndHorizontal();
                 
                 
                 
@@ -165,7 +177,50 @@ public class DebugMenuUI : MonoBehaviour
                  * be controlled from the Cheat Console.
                  */
                 
-                
+                // Create a vertical section for the controls
+                GUILayout.BeginVertical("box");
+                {
+                    // Control for GameManager.Instance.interactiveMode
+                    GUILayout.BeginHorizontal();
+                    {
+                        GUILayout.Label("Interactive Mode: ", GUILayout.Width(WINDOW_DIMENSION.x / 3.0f));
+                        var interactiveMode = GameManager.Instance.interactiveMode;
+                        interactiveMode = GUILayout.Toggle(interactiveMode, interactiveMode ? "Enabled" : "Disabled");
+                        if (GUI.changed)
+                        {
+                            GameManager.Instance.interactiveMode = interactiveMode;
+                        }
+                    }
+                    GUILayout.EndHorizontal();
+
+                    // Control for SoundManager.Instance.masterVolume
+                    GUILayout.BeginHorizontal();
+                    {
+                        GUILayout.Label("Master Volume: ", GUILayout.Width(WINDOW_DIMENSION.x / 3.0f));
+                        var masterVolume = SoundManager.Instance.masterVolume;
+                        masterVolume = GUILayout.HorizontalSlider(masterVolume, -80.0f, 20.0f, GUILayout.ExpandWidth(true));
+                        GUILayout.Label($"{masterVolume:F1} dB", GUILayout.Width(WINDOW_DIMENSION.x / 6.0f));
+                        if (GUI.changed)
+                        {
+                            SoundManager.Instance.masterVolume = masterVolume;
+                        }
+                    }
+                    GUILayout.EndHorizontal();
+
+                    // Control for SoundManager.Instance.masterMuted
+                    GUILayout.BeginHorizontal();
+                    {
+                        GUILayout.Label("Mute Sound: ", GUILayout.Width(WINDOW_DIMENSION.x / 3.0f));
+                        var masterMuted = SoundManager.Instance.masterMuted;
+                        masterMuted = GUILayout.Toggle(masterMuted, masterMuted ? "Muted" : "Unmuted");
+                        if (GUI.changed)
+                        {
+                            SoundManager.Instance.masterMuted = masterMuted;
+                        }
+                    }
+                    GUILayout.EndHorizontal();
+                }
+                GUILayout.EndVertical();
                 
                 
                 
@@ -196,7 +251,9 @@ public class DebugMenuUI : MonoBehaviour
                     if (GUILayout.Button("Enable\nDummy\nCharacter", 
                         GUILayout.ExpandWidth(true), 
                         GUILayout.ExpandHeight(true)))
-                    { /* Fill the code here! */ }
+                    { /* Fill the code here! */ 
+                        GameManager.Instance.TogglePlayerCharacter();
+                    }
                 }
                 GUILayout.EndHorizontal();
                 // Do not forget to end each group in the correct order!

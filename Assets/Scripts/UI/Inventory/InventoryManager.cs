@@ -154,8 +154,11 @@ public class InventoryManager : MonoBehaviour
          * be called.
          */
         
-        
-        
+        mItemCreateButton = itemDetails.Q<Button>("ItemDetailButtonCreate"); // Replace "CreateButton" with the actual name in the UI Builder
+        if (mItemCreateButton != null)
+        {
+            mItemCreateButton.clicked += () => CreateItem();
+        }
         
         await UniTask.WaitForEndOfFrame();
 
@@ -389,9 +392,24 @@ public class InventoryManager : MonoBehaviour
         
         if (item == null)
         { // We have no item selected -> Provide some default information.
+            // No item is selected -> Provide default information
+            mItemDetailName.text = "No Item Selected";
+            mItemDetailDescription.text = "Select an item to view details.";
+            mItemDetailCost.text = "N/A";
+            
+            // Disable the CREATE button as no item can be created
+            mItemCreateButton.SetEnabled(false);
         }
         else
         { // We have item selected -> Use the item information.
+            // An item is selected -> Update UI with item information
+            mItemDetailName.text = item.definition.readableName;
+            mItemDetailDescription.text = item.definition.readableDescription;
+            mItemDetailCost.text = item.definition.cost.ToString();
+
+            // Enable or disable the CREATE button based on available currency
+            bool canAfford = availableCurrency >= item.definition.cost;
+            mItemCreateButton.SetEnabled(canAfford);
         }
         
         selectedItem = item;
@@ -425,8 +443,39 @@ public class InventoryManager : MonoBehaviour
          * These items are not cheap to make!
          */
         
-        var itemDefinition = selectedItem?.definition;
-        
-        return false;
+        // Check if there is a valid selected item
+        if (selectedItem == null || selectedItem.definition == null)
+        {
+            return false;
+        }
+
+        var itemDefinition = selectedItem.definition;
+
+        // Check if the player has enough currency to create the item
+        if (availableCurrency < itemDefinition.cost)
+        {
+            return false;
+        }
+
+        // Instantiate the item prefab at the createDestination transform
+        if (itemDefinition.prefab != null && createDestination != null)
+        {
+            Instantiate(itemDefinition.prefab, createDestination.transform);
+        }
+        else
+        {
+            return false;
+        }
+
+        // Deduct the item's cost from the available currency
+        availableCurrency -= itemDefinition.cost;
+
+        // Optionally, update the UI to reflect the new currency amount
+        if (mCurrencyValue != null)
+        {
+            mCurrencyValue.text = availableCurrency.ToString();
+        }
+
+        return true;
     }
 }
